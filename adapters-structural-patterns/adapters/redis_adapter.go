@@ -1,10 +1,10 @@
 package adapters
 
 import (
+	"context"
 	"fmt"
-	"time"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 type RedisAdapter struct {
@@ -12,37 +12,28 @@ type RedisAdapter struct {
 	Password string
 }
 
-func (ra *RedisAdapter) Connect() (redis.Conn, error) {
-	const healthCheckPeriod = time.Minute
-	return redis.Dial("tcp", ra.Host,
-		// Read timeout on server should be greater than ping period.
-		redis.DialReadTimeout(healthCheckPeriod+10*time.Second),
-		redis.DialWriteTimeout(10*time.Second),
-		redis.DialPassword(ra.Password))
+var ctx = context.Background()
+
+func (ra *RedisAdapter) Connect() *redis.Client {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     ra.Host,
+		Password: ra.Password,
+	})
+
+	return redisClient
 }
 
-func (ra *RedisAdapter) Publish(channel string, content string) {
-	c, err := ra.Connect()
-	if err != nil {
-		panic(err)
+func (ra *RedisAdapter) Publish(channel string, message string) {
+	c := ra.Connect()
+
+	pubsub := c.Subscribe(ctx, channel)
+
+	c.Publish(ctx, channel, message)
+
+	msg, errRcv := pubsub.ReceiveMessage(ctx)
+	if errRcv != nil {
+		panic(errRcv)
 	}
 
-	pb := redis.PubSubConn{c}
-
-	// Set up subscriptions
-	pb.Subscribe(channel)
-
-	// While not a permanent error on the connection.
-	for c.Err() == nil {
-		switch v := pb.Receive().(type) {
-		case redis.Message:
-			fmt.Printf("%s: message: %s\n", v.Channel, v.Data)
-		case redis.Subscription:
-			fmt.Printf("%s: %s %d\n", v.Channel, v.Kind, v.Count)
-		case error:
-			fmt.Printf("gagal")
-		}
-	}
-
-	c.Do("PUBLISH", channel, content)
+	fmt.Println(msg.Payload)
 }

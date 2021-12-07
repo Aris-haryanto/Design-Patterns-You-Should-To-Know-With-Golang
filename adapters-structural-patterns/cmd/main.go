@@ -8,9 +8,9 @@ import (
 
 const (
 	channel = "test_channel"
-	// message = "test message"
 )
 
+//set data nats connection ke struct Pubsub yang ada di /services
 func NatsConn() *services.PubSub {
 	nconn := &adapters.NatsAdapters{Host: "127.0.0.1"}
 	return &services.PubSub{
@@ -18,6 +18,7 @@ func NatsConn() *services.PubSub {
 	}
 }
 
+//set data redis connection ke struct Pubsub yang ada di /services
 func RedisConn() *services.PubSub {
 	nconn := &adapters.RedisAdapter{Host: "127.0.0.1:6379", Password: ""}
 	return &services.PubSub{
@@ -27,6 +28,7 @@ func RedisConn() *services.PubSub {
 
 func main() {
 
+	//define struct pubsub dari package /service
 	nat := services.PubSub{}
 
 	//publish from nats
