@@ -1,3 +1,6 @@
+> :information_desk_person: This repo is tutorial for this article https://arisharyanto.medium.com/golang-adapter-pattern-with-nats-and-redis-pubsub-76ea8d2f1a28
+
+
 ## Step 1
 Make sure you have installed Docker & Golang on your local computer
 
