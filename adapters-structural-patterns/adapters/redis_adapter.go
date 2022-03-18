@@ -2,38 +2,47 @@ package adapters
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
 type RedisAdapter struct {
-	Host     string
-	Password string
+	Conn *redis.Client
 }
 
-var ctx = context.Background()
-
-func (ra *RedisAdapter) Connect() *redis.Client {
+func RedisConn(host string, password string) *redis.Client {
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     ra.Host,
-		Password: ra.Password,
+		Addr:     host,
+		Password: password,
 	})
 
 	return redisClient
 }
 
 func (ra *RedisAdapter) Publish(channel string, message string) {
-	c := ra.Connect()
+	// set context timeout if publish more than 1 minute
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 
-	pubsub := c.Subscribe(ctx, channel)
+	//publish message with go routine for asynch
+	ra.Conn.Publish(ctx, channel, message)
+}
 
-	c.Publish(ctx, channel, message)
+func (ra *RedisAdapter) Listener(channel string) {
+	// set context cancel if listener goes wrong
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	msg, errRcv := pubsub.ReceiveMessage(ctx)
-	if errRcv != nil {
-		panic(errRcv)
+	pubsub := ra.Conn.Subscribe(ctx, channel)
+
+	for {
+		msg, errRcv := pubsub.ReceiveMessage(ctx)
+		if errRcv != nil {
+			log.Println(errRcv)
+		}
+
+		log.Println(msg.Payload)
 	}
-
-	fmt.Println(msg.Payload)
 }

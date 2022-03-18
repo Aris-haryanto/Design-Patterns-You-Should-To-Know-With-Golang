@@ -1,33 +1,32 @@
 package adapters
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/nats-io/nats.go"
 )
 
-type NatsAdapters struct {
-	Host string
+type NatsAdapter struct {
+	Conn *nats.Conn
 }
 
-func (na *NatsAdapters) Connect() *nats.Conn {
-	conn, err := nats.Connect(na.Host)
+func NatsConn(host string) *nats.Conn {
+	conn, err := nats.Connect(host)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	return conn
 }
 
-func (na *NatsAdapters) Publish(channel string, message string) {
-	// call connection
-	c := na.Connect()
-
-	// set subscriptions
-	c.Subscribe(channel, func(m *nats.Msg) {
-		fmt.Println(string(m.Data))
-	})
-
+func (na *NatsAdapter) Publish(channel string, message string) {
 	//publish to service receiver
-	c.Publish(channel, []byte(message))
+	na.Conn.Publish(channel, []byte(message))
+}
+
+func (na *NatsAdapter) Listener(channel string) {
+	// set subscriptions
+	na.Conn.Subscribe(channel, func(m *nats.Msg) {
+		log.Println(string(m.Data))
+	})
 }

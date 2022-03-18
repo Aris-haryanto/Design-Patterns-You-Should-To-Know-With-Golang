@@ -1,0 +1,19 @@
+version: "3.5"
+services:
+  nats:
+    image: nats
+    ports:
+      - "4222:4222"
+    networks: 
+      - design-patterns
+  
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - design-patterns
+
+networks:
+  design-patterns:
+    name: adapter

@@ -3,7 +3,6 @@ package main
 import (
 	"adapters-structural-patterns/adapters"
 	"adapters-structural-patterns/services"
-	"runtime"
 )
 
 const (
@@ -12,33 +11,36 @@ const (
 
 //set data nats connection ke struct Pubsub yang ada di /services
 func NatsConn() *services.PubSub {
-	nconn := &adapters.NatsAdapters{Host: "127.0.0.1"}
+	nConn := adapters.NatsConn("127.0.0.1:4222")
+	setConn := &adapters.NatsAdapter{Conn: nConn}
 	return &services.PubSub{
-		Adapter: nconn,
+		Adapter: setConn,
 	}
 }
 
 //set data redis connection ke struct Pubsub yang ada di /services
 func RedisConn() *services.PubSub {
-	nconn := &adapters.RedisAdapter{Host: "127.0.0.1:6379", Password: ""}
+	rConn := adapters.RedisConn("127.0.0.1:6379", "")
+	setConn := &adapters.RedisAdapter{Conn: rConn}
 	return &services.PubSub{
-		Adapter: nconn,
+		Adapter: setConn,
 	}
 }
 
 func main() {
 
 	//define struct pubsub dari package /service
-	nat := services.PubSub{}
+	pb := services.PubSub{}
 
-	//publish from nats
-	nat.SetStruct(NatsConn())
-	nat.Publish(channel, "ini publish dari nats")
+	//set menggunakan adapter nats
+	pb.SetStruct(NatsConn())
+	go pb.Publish(channel, "ini publish dari nats")
+	pb.Listener(channel)
 
-	//publish from redis
-	nat.SetStruct(RedisConn())
-	nat.Publish(channel, "ini publish dari redis")
+	//====================
 
-	// Keep the connection alive
-	runtime.Goexit()
+	//set menggunakan adapter redis
+	pb.SetStruct(RedisConn())
+	go pb.Publish(channel, "ini publish dari redis")
+	pb.Listener(channel)
 }
