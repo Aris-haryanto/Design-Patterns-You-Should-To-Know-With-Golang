@@ -9,7 +9,7 @@ const (
 	channel = "test_channel"
 )
 
-//set data nats connection ke struct Pubsub yang ada di /services
+//set nats connection dan set ke struct Pubsub yang ada di /services
 func NatsConn() *services.PubSub {
 	nConn := adapters.NatsConn("127.0.0.1:4222")
 	setConn := &adapters.NatsAdapter{Conn: nConn}
@@ -18,7 +18,7 @@ func NatsConn() *services.PubSub {
 	}
 }
 
-//set data redis connection ke struct Pubsub yang ada di /services
+//set redis connection dan set ke struct Pubsub yang ada di /services
 func RedisConn() *services.PubSub {
 	rConn := adapters.RedisConn("127.0.0.1:6379", "")
 	setConn := &adapters.RedisAdapter{Conn: rConn}
