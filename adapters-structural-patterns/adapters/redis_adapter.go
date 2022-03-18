@@ -22,16 +22,16 @@ func RedisConn(host string, password string) *redis.Client {
 }
 
 func (ra *RedisAdapter) Publish(channel string, message string) {
-	// set context timeout if publish more than 1 minute
+	// set context timeout when publish more than 1 minute
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	//publish message with go routine for asynch
+	// publish message
 	ra.Conn.Publish(ctx, channel, message)
 }
 
 func (ra *RedisAdapter) Listener(channel string) {
-	// set context cancel if listener goes wrong
+	// set context cancel
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
