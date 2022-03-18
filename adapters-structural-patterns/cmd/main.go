@@ -33,14 +33,14 @@ func main() {
 	pb := services.PubSub{}
 
 	//set menggunakan adapter nats
-	pb.SetStruct(NatsConn())
+	pb.SetAdapter(NatsConn())
 	go pb.Publish(channel, "ini publish dari nats")
 	pb.Listener(channel)
 
 	//====================
 
 	//set menggunakan adapter redis
-	pb.SetStruct(RedisConn())
+	pb.SetAdapter(RedisConn())
 	go pb.Publish(channel, "ini publish dari redis")
 	pb.Listener(channel)
 }

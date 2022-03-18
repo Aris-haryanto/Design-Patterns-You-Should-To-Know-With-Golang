@@ -13,7 +13,7 @@ type PubSub struct {
 }
 
 // function ini digunakan untuk set data ke struct yang ada di function interface
-func (pb *PubSub) SetStruct(data IAdapter) {
+func (pb *PubSub) SetAdapter(data IAdapter) {
 	pb.Adapter = data
 }
 
